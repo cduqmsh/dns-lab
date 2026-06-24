@@ -1,0 +1,17 @@
+# 192.168.1.r 에 대한 리버스 zone 파일 
+
+$ORIGIN .
+$TTL 60 ; 1 minute
+1.168.192.in-addr.arpa  IN SOA  ns.test.com. dnsadmin.test.com. (
+                                2020042103 ; serial
+                                3600       ; refresh (1 hour)
+                                1800       ; retry (30 minutes)
+                                3600       ; expire (1 hour)
+                                1          ; minimum (1 second)
+                                )
+                        NS      ns.joins.com.
+                        NS      ns2.kt-idc.com.
+$ORIGIN 1.168.192.in-addr.arpa.
+10                     PTR     test11.test.com.
+20                     PTR     test22.test.com.
+
