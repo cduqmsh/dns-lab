@@ -7,10 +7,9 @@ Let's Encrypt Wildcard 인증서 발급을 위해 DNS-01 Challenge 방식을 사
 HTTP-01 방식은 Wildcard 인증서를 지원하지 않기 때문에 DNS TXT 검증이 필요하며, BIND DNS의 RFC2136 Dynamic Update 기능을 이용하여 Certbot이 자동으로 TXT 레코드를 생성/삭제하도록 구성한다.
 
 ## 2. 구성 환경
-
+```bash
 구성 흐름
 
-''shell
 Certbot 서버
     |
     | RFC2136 DNS UPDATE
@@ -29,10 +28,10 @@ Let's Encrypt 검증
     |
     ↓
 인증서 발급
-''
+```
 
-3. DNS-01 Challenge 동작 방식
-
+## 3. DNS-01 Challenge 동작 방식
+```bash
 Wildcard 인증서 발급 시 Let's Encrypt는 DNS TXT 레코드 검증을 수행한다.
 
 Certbot 실행 시:
@@ -49,7 +48,6 @@ Let's Encrypt Challenge 요청
 _acme-challenge.도메인 TXT 등록 요청
 Certbot은 RFC2136 Dynamic Update를 통해 BIND DNS에 임시 TXT 레코드를 생성한다.
  
-
 예:
 
 _acme-challenge.yumin.org TXT "랜덤검증값"
@@ -66,9 +64,10 @@ NXDOMAIN
 으로 나오는 것은 정상이다.
 
 * 임시 인증이라 zone 파일에는 반영 안될 수 있음
+```
 
-4. BIND 설정
-
+## 4. BIND 설정
+```bash
 Zone 설정
 
 파일:
@@ -93,9 +92,10 @@ zone "yumin.org" IN {
     zone-statistics yes;
 };
 추가 후 rndc reconfig 로 설정 반영 필요
+```
 
-5. TSIG Key 설정
-
+## 5. TSIG Key 설정
+```bash
 Certbot과 BIND 간 인증을 위해 TSIG Key 사용.
 
 해당 키값  생성(바인드에서 생성) : tsig-keygen -a hmac-sha256 certbot-key > certbot.key
@@ -109,10 +109,11 @@ key "certbot-key" {
 권한:
 
 chmod 600 rfc2136.ini
-6. Certbot 설정
+```
 
+## 6. Certbot 설정
+```bash
 파일:
-
 /etc/letsencrypt/rfc2136.ini
 예:
 
@@ -120,9 +121,10 @@ dns_rfc2136_server = DNS_SERVER_IP
 dns_rfc2136_name = certbot-key  (바인드에서 생성한 키값 이름)
 dns_rfc2136_secret = SECRET_VALUE (바인드에서 생성한 키값 데이터)
 dns_rfc2136_algorithm = HMAC-SHA256
+```
 
-7. 인증서 발급
-
+## 7. 인증서 발급
+```bash
 실행:
 
 certbot certonly \
@@ -139,9 +141,10 @@ Certificate is saved at:
 
 Key is saved at:
 /etc/letsencrypt/live/yumin.org/privkey.pem
+```
 
-8. 와일드카드 인증서 확인
-
+## 8. 와일드카드 인증서 확인
+```bash
 Certbot 확인
 Edit
 certbot certificates
@@ -163,9 +166,10 @@ openssl x509 \
 
 X509v3 Subject Alternative Name:
     DNS:yumin.org, DNS:*.yumin.org
+```
 
-9. Dynamic Update 동작 확인
-
+## 9. Dynamic Update 동작 확인
+```bash
 동적 업데이트는 zone 파일을 직접 수정하지 않고 journal 파일을 통해 변경된다.
 
 구조:
@@ -181,9 +185,10 @@ RFC2136 업데이트 발생 시:
 SOA Serial 자동 증가
 zone.jnl 파일 생성/변경
 DNS 응답 변경
+```
 
-10. 테스트 과정
-
+## 10. 테스트 과정
+```bash
 기존 테스트 TXT 확인
 
 dig TXT _acme-challenge.yumin.org
@@ -204,9 +209,10 @@ dig TXT _acme-challenge.yumin.org
 status: NXDOMAIN
 ANSWER: 0
 정상 삭제 확인.
+```
 
-11. 자동 갱신 테스트
-
+## 11. 자동 갱신 테스트
+```bash
 Certbot은 자동 갱신 작업을 등록한다.
 
 확인:
@@ -215,9 +221,10 @@ certbot renew --dry-run
 성공 결과:
 
 Congratulations, all simulated renewals succeeded
+```
 
-12. 운영 적용 시 주의사항
-
+## 12. 운영 적용 시 주의사항
+```bash
 권장
 
 TSIG Key 사용
@@ -230,9 +237,10 @@ allow-update {
     any;
 };
 모든 클라이언트가 DNS 변경 가능하므로 운영 환경에서는 사용하지 않는다.
+```
 
-13. 최종 상태
-Edit
+## 13. 최종 상태
+```bash
 구성 완료 항목:
 
 항목	상태
@@ -244,3 +252,4 @@ TXT 자동 생성	정상
 TXT 자동 삭제	정상
 Certbot 자동 갱신	설정 완료
 최종 구성은 BIND DNS와 Let's Encrypt Wildcard 인증서를 자동 연동하는 운영 가능한 구조이다.
+```
